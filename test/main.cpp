@@ -1,13 +1,14 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+//#include <glm/glm.hpp>
 
 #include <iostream>
 #include <string>
 #include <fstream>
 #include <sstream>
 #define STB_IMAGE_IMPLEMENTATION
-#include "src/image/stb_image.h"
-#include <glm/glm.hpp>
+#include "src/stb_image.h"
+
 
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
@@ -20,7 +21,7 @@ void checkCompileErrors(unsigned int shader, std::string type);
 
 int main(){
     //glm test
-    glm::vec3 test(3,45,3);
+    //glm::vec3 test(3,45,3);
     //stb image test
     int width, height, nrChannels;
     unsigned char *data = stbi_load("container.jpg", &width, &height, &nrChannels, 0); 
