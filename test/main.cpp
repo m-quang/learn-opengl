@@ -10,6 +10,7 @@
 #include "src/stb_image.h"
 
 
+
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 
