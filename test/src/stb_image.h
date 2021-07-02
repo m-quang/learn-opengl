@@ -107,7 +107,7 @@ STBI_ONLY_PNM   (.ppm and .pgm)
 Note that you can define multiples of these, and you will get all
 of them ("only x" and "only y" is interpreted to mean "only x&y").
 
-- If you use STBI_NO_PNG (or _ONLY_ without PNG), and you still
+- If you use STBI_NO_PNG (or _ONLY_ without PNG), and you still 
 want the zlib decoder to be available, #define STBI_SUPPORT_ZLIB
 
 - Compilation of all SIMD code can be suppressed with

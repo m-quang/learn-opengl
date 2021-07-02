@@ -1,6 +1,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-//#include <glm/glm.hpp>
+#include <glm/glm.hpp>
 
 #include <iostream>
 #include <string>
@@ -8,7 +8,7 @@
 #include <sstream>
 #define STB_IMAGE_IMPLEMENTATION
 #include "src/stb_image.h"
-
+#include "src/shader.h"
 
 
 #define SCREEN_WIDTH 800
@@ -22,11 +22,13 @@ void checkCompileErrors(unsigned int shader, std::string type);
 
 int main(){
     //glm test
-    //glm::vec3 test(3,45,3);
+    glm::vec3 test(3,45,3);
     //stb image test
     int width, height, nrChannels;
-    unsigned char *data = stbi_load("container.jpg", &width, &height, &nrChannels, 0); 
-    
+    unsigned char *data = stbi_load("resource/test_image.png", &width, &height, &nrChannels, 0); 
+    if(data == NULL){
+        std::cout<<"false to load image"<<std::endl;
+    }
     //init glfw
     GLFWwindow* window;
     initWindow(window);
@@ -46,7 +48,9 @@ int main(){
     //1. complierShader(ShaderProgram, "/home/gnuaq/Documents/test/cpp/vscode/learn_opengl/test/shader/shader.vs",
     //                               "/home/gnuaq/Documents/test/cpp/vscode/learn_opengl/test/shader/shader.fs");
     //2. with cmake (destination build/shader)
-    complierShader(ShaderProgram, "shader/shader.vs", "shader/shader.fs");
+    //complierShader(ShaderProgram, "shader/shader.vs", "shader/shader.fs");
+    Shader shader("shader/shader.vs", "shader/shader.fs");
+    ShaderProgram = shader.getShaderProgram();
 
     unsigned int VAO, VBO;
     glGenVertexArrays(1, &VAO);
