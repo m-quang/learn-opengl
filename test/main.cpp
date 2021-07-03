@@ -10,25 +10,18 @@
 #include "src/stb_image.h"
 #include "src/shader.h"
 
+#define RESOURCES "../resources/"
 
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 
 void initWindow(GLFWwindow*& window);
 
-//return shader program
-void complierShader(unsigned int& ShaderProgram, const char* vertexPath, const char* fragmentPath);
-void checkCompileErrors(unsigned int shader, std::string type);
 
 int main(){
     //glm test
     glm::vec3 test(3,45,3);
-    //stb image test
-    int width, height, nrChannels;
-    unsigned char *data = stbi_load("resource/test_image.png", &width, &height, &nrChannels, 0); 
-    if(data == NULL){
-        std::cout<<"false to load image"<<std::endl;
-    }
+
     //init glfw
     GLFWwindow* window;
     initWindow(window);
@@ -39,17 +32,19 @@ int main(){
     }
     
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-         0.0f,  0.5f, 0.0f
+        // positions         // colors
+        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f,
+         0.5f, -0.5f, 0.0f,  1.0f, 1.0f,
+         0.0f,  0.5f, 0.0f,  0.5f, 0.0f
     };
+
 
     unsigned int ShaderProgram;
     //1. complierShader(ShaderProgram, "/home/gnuaq/Documents/test/cpp/vscode/learn_opengl/test/shader/shader.vs",
     //                               "/home/gnuaq/Documents/test/cpp/vscode/learn_opengl/test/shader/shader.fs");
     //2. with cmake (destination build/shader)
     //complierShader(ShaderProgram, "shader/shader.vs", "shader/shader.fs");
-    Shader shader("shader/shader.vs", "shader/shader.fs");
+    Shader shader(RESOURCES "shader/shader.vs", RESOURCES "shader/shader.fs");
     ShaderProgram = shader.getShaderProgram();
 
     unsigned int VAO, VBO;
@@ -59,15 +54,48 @@ int main(){
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+    //texture pareameter
+    unsigned int texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+
+//    float borderColor[] = { 1.0f, 1.0f, 0.0f, 1.0f };
+//    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    int width, height, nrChannels;
+    //stbi_set_flip_vertically_on_load(true);
+    unsigned char* data = stbi_load(RESOURCES "image/test_image.png", &width, &height, &nrChannels, 0);
+    //unsigned char* data = stbi_load(FileSystem::getPath("resource/test_image.png").c_str(), &width, &height, &nrChannels, 0);
+    if (data == 0)
+        std::cout << "flase to load texture" << std::endl;
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    stbi_image_free(data);
 
     while(!glfwWindowShouldClose(window)){
         
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        //glBindTexture(GL_TEXTURE_2D, texture);
 
         glUseProgram(ShaderProgram);
         glBindVertexArray(VAO);
@@ -79,6 +107,7 @@ int main(){
     glfwTerminate();
     return 0;
 }
+
 
 void initWindow(GLFWwindow*& window){
 
@@ -96,84 +125,4 @@ void initWindow(GLFWwindow*& window){
     window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "test", NULL, NULL);
     glfwSetWindowPos(window, 30, 30);
     glfwMakeContextCurrent(window);
-}
-
-
-void complierShader(unsigned int& ShaderProgram, const char* vertexPath, const char* fragmentPath){
-    // 1. retrieve the vertex/fragment source code from filePath
-    std::string vertexCode;
-    std::string fragmentCode;
-    std::ifstream vShaderFile;
-    std::ifstream fShaderFile;
-    // ensure ifstream objects can throw exceptions:
-    vShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
-    fShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
-    try 
-    {
-        // open files
-        vShaderFile.open(vertexPath);
-        fShaderFile.open(fragmentPath);
-        std::stringstream vShaderStream, fShaderStream;
-        // read file's buffer contents into streams
-        vShaderStream << vShaderFile.rdbuf();
-        fShaderStream << fShaderFile.rdbuf();
-        // close file handlers
-        vShaderFile.close();
-        fShaderFile.close();
-        // convert stream into string
-        vertexCode   = vShaderStream.str();
-        fragmentCode = fShaderStream.str();
-    }
-    catch (std::ifstream::failure& e)
-    {
-        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
-    }
-    const char* vShaderCode = vertexCode.c_str();
-    const char * fShaderCode = fragmentCode.c_str();
-    // 2. compile shaders
-    unsigned int vertex, fragment;
-    // vertex shader
-    vertex = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex, 1, &vShaderCode, NULL);
-    glCompileShader(vertex);
-    checkCompileErrors(vertex, "VERTEX");
-    // fragment Shader
-    fragment = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment, 1, &fShaderCode, NULL);
-    glCompileShader(fragment);
-    checkCompileErrors(fragment, "FRAGMENT");
-    // shader Program
-    ShaderProgram = glCreateProgram();
-    glAttachShader(ShaderProgram, vertex);
-    glAttachShader(ShaderProgram, fragment);
-    glLinkProgram(ShaderProgram);
-    checkCompileErrors(ShaderProgram, "PROGRAM");
-    // delete the shaders as they're linked into our program now and no longer necessary
-    glDeleteShader(vertex);
-    glDeleteShader(fragment);
-}
-
-
-void checkCompileErrors(unsigned int shader, std::string type)
-{
-    int success;
-    char infoLog[1024];
-    if (type != "PROGRAM")
-    {
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
-            glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-            std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
-        }
-    }
-    else
-    {
-        glGetProgramiv(shader, GL_LINK_STATUS, &success);
-        if (!success)
-        {
-            glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-            std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
-        }
-    }
 }

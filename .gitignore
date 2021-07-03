@@ -1,2 +1,9 @@
-.vscode/
 build/
+
+.vscode/
+
+.vs/
+out/
+
+/.idea
+cmake-build-debug/
