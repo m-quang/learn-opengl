@@ -10,5 +10,5 @@ void main()
 {
    //FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
    //vec2 texture2 = vec2(1.0f, 0.4f);
-   FragColor = texture(texture1, Texture) * vec4(0.8f, 0.3f, 0.2f, 1.0f);
+   FragColor = texture(texture1, Texture);
 }
